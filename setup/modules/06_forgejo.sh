@@ -24,6 +24,28 @@ mkdir -p "${DATA_DIR}"
 # --------------------------------------------------------------------------
 echo "[INFO] docker-compose.yml を配置します: ${COMPOSE_FILE}"
 
+# --------------------------------------------------------------------------
+# Forgejo の最新メジャーバージョンを Codeberg API から取得
+# --------------------------------------------------------------------------
+echo "[INFO] Forgejo の最新リリースバージョンを取得します..."
+FORGEJO_VERSION=""
+
+# Codeberg API でタグ名を取得し、メジャーバージョンのみ抽出（例: v9.0.3 → 9）
+FORGEJO_VERSION="$(
+  curl -sf --max-time 15 \
+    'https://codeberg.org/api/v1/repos/forgejo/forgejo/releases?limit=1&pre-release=false' \
+    | grep -oP '"tag_name"\s*:\s*"v\K[0-9]+' \
+    | head -1 \
+)" || true
+
+if [[ -z "${FORGEJO_VERSION}" ]]; then
+  echo "[WARN] バージョン取得に失敗しました。フォールバックとして '15' を使用します。"
+  FORGEJO_VERSION="15"
+fi
+
+FORGEJO_IMAGE="codeberg.org/forgejo/forgejo:${FORGEJO_VERSION}"
+echo "[INFO] 使用するイメージ: ${FORGEJO_IMAGE}"
+
 cat > "${COMPOSE_FILE}" <<EOF
 # =============================================================================
 # /opt/forgejo/docker-compose.yml
@@ -37,7 +59,7 @@ networks:
 
 services:
   forgejo:
-    image: ghcr.io/forgejo/forgejo:latest
+    image: ${FORGEJO_IMAGE}
     container_name: forgejo
     restart: unless-stopped
     networks:
