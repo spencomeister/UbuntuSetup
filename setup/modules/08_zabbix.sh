@@ -92,6 +92,21 @@ services:
       PHP_TZ: Asia/Tokyo
     ports:
       - "8080:8080"
+
+  zabbix-agent:
+    image: zabbix/zabbix-agent2:latest
+    container_name: zabbix-agent
+    restart: unless-stopped
+    networks:
+      - zabbix
+    depends_on:
+      - zabbix-server
+    environment:
+      ZBX_HOSTNAME: Zabbix server
+      ZBX_SERVER_HOST: zabbix-server
+      ZBX_SERVER_PORT: 10051
+    privileged: true
+    pid: "host"
 EOF
 
 echo "[INFO] docker-compose.yml を配置しました。"

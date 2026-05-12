@@ -103,19 +103,16 @@ cat > "${CADDYFILE}" <<'EOF'
 git.seragl.io {
     tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
 
-    # Cloudflare の実クライアント IP をログ・アクセス制御に使用
-    header_up X-Real-IP {http.request.header.CF-Connecting-IP}
-
     # Cloudflare Proxy 以外からの直接アクセスを拒否（オプション: CF IP レンジを許可リスト化）
     # 必要に応じて有効化すること（CF IP リストは変動するため cf-dns-update.sh での管理も検討）
     # @not_cf not remote_ip 103.21.244.0/22 103.22.200.0/22 # ... (省略)
     # respond @not_cf "Forbidden" 403
 
     reverse_proxy localhost:3000 {
-        # Forgejo へ接続情報を転送
+        # Cloudflare の実クライアント IP と接続情報を Forgejo へ転送
+        header_up X-Real-IP {http.request.header.CF-Connecting-IP}
         header_up Host {host}
         header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
-        header_up X-Forwarded-Proto {scheme}
     }
 
     log {
@@ -131,12 +128,10 @@ git.seragl.io {
 zbx.seragl.io {
     tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
 
-    header_up X-Real-IP {http.request.header.CF-Connecting-IP}
-
     reverse_proxy localhost:8080 {
+        header_up X-Real-IP {http.request.header.CF-Connecting-IP}
         header_up Host {host}
         header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
-        header_up X-Forwarded-Proto {scheme}
     }
 
     log {
@@ -150,6 +145,10 @@ zbx.seragl.io {
 EOF
 
 echo "[INFO] Caddyfile を配置しました。"
+
+# Caddyfile のフォーマット正規化
+caddy fmt --overwrite "${CADDYFILE}"
+echo "[INFO] Caddyfile のフォーマットを正規化しました。"
 
 # --------------------------------------------------------------------------
 # 証明書ファイルの存在確認
@@ -173,10 +172,20 @@ if [[ "${CERTS_READY}" == "false" ]]; then
   echo ""
   echo "[INFO] 証明書の発行手順は README.md を参照してください。"
   echo "[INFO] 配置先:"
-  echo "         証明書: ${CERT_PEM}（パーミッション: 644）"
-  echo "         秘密鍵: ${CERT_KEY}（パーミッション: 600）"
+  echo "         証明書: ${CERT_PEM}（パーミッション: root:caddy 644）"
+  echo "         秘密鍵: ${CERT_KEY}（パーミッション: root:caddy 640）"
   exit 0
 fi
+
+# --------------------------------------------------------------------------
+# 証明書ファイルのパーミッション設定（caddy ユーザーが読み取れるよう設定）
+# --------------------------------------------------------------------------
+echo "[INFO] 証明書ファイルのパーミッションを設定します..."
+chown root:caddy "${CERT_PEM}"
+chmod 644 "${CERT_PEM}"
+chown root:caddy "${CERT_KEY}"
+chmod 640 "${CERT_KEY}"  # caddy グループが読み取れるよう 640（600 では caddy ユーザーが読めない）
+echo "[INFO] 証明書パーミッション設定完了。"
 
 # --------------------------------------------------------------------------
 # Caddyfile の構文チェック

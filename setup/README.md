@@ -74,7 +74,8 @@ sudo chmod 644 /etc/caddy/certs/origin.pem
 
 # 秘密鍵ファイルを配置（発行した Private Key を貼り付け）
 sudo nano /etc/caddy/certs/origin.key
-sudo chmod 600 /etc/caddy/certs/origin.key
+sudo chown root:caddy /etc/caddy/certs/origin.key
+sudo chmod 640 /etc/caddy/certs/origin.key
 
 # Cloudflare Origin CA Root を証明書に連結
 curl -so /tmp/cf-origin-ca.pem \
