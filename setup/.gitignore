@@ -1,0 +1,10 @@
+# 秘密情報
+.env
+
+# エディタ・OS ゴミファイル
+.DS_Store
+Thumbs.db
+*.swp
+
+# AI
+.github/github-instructions.md
