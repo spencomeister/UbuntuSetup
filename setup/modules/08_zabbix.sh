@@ -34,8 +34,6 @@ cat > "${COMPOSE_FILE}" <<EOF
 # 初期管理者: Admin / zabbix（初回ログイン後に必ず変更すること）
 # =============================================================================
 
-version: "3.8"
-
 networks:
   zabbix:
     external: false

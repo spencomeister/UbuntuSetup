@@ -31,15 +31,13 @@ cat > "${COMPOSE_FILE}" <<EOF
 # 公開 URL: https://git.seragl.io（Caddy リバースプロキシ経由）
 # =============================================================================
 
-version: "3.8"
-
 networks:
   forgejo:
     external: false
 
 services:
   forgejo:
-    image: codeberg.org/forgejo/forgejo:latest
+    image: ghcr.io/forgejo/forgejo:latest
     container_name: forgejo
     restart: unless-stopped
     networks:
