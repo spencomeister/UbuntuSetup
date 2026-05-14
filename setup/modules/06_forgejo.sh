@@ -72,6 +72,7 @@ services:
       - FORGEJO__server__ROOT_URL=https://git.seragl.io
       - FORGEJO__server__SSH_DOMAIN=git.seragl.io
       - FORGEJO__server__SSH_PORT=222
+      - FORGEJO__actions__ENABLED=true
     ports:
       - "3000:3000"
       - "222:22"

@@ -51,7 +51,9 @@ run_module "02_base_packages.sh"
 run_module "03_security.sh"
 run_module "04_docker.sh"
 run_module "05_tailscale.sh"
+run_module "06a_swap.sh"          # ← 06_forgejo.sh の前に追加
 run_module "06_forgejo.sh"
+run_module "06b_forgejo_runner.sh" # ← 06_forgejo.sh の直後に追加
 run_module "07_cloudflare_dns.sh"
 run_module "08_zabbix.sh"
 run_module "09_caddy.sh"
